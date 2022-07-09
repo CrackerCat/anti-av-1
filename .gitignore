@@ -1,0 +1,4 @@
+*.syso
+.DS_Store
+dist
+anti-av
