@@ -8,6 +8,19 @@
 
 
 ## 安装
+
+### Requirement
+
+```bash
+1、建议使用Mac或 linux环境
+2、mingw64
+3、osslsigncode
+```
+
+
+
+### anti-av
+
 ```bash
 git clone https://github.com/b1gcat/anti-av.git
 go build
