@@ -83,7 +83,7 @@ func (c *config) compile() error {
 	}
 	for _, arch := range archs {
 		utils.CreateIcoPropertity(arch)
-		output := fmt.Sprintf("../antiav_windows_%s.exe", arch)
+		output := filepath.Join("..", fmt.Sprintf("antiav_windows_%s.exe", arch))
 		cmd := fmt.Sprintf(`
 			%s CGO_ENABLED=1 && 
 			%s CC=%s &&

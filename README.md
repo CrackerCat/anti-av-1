@@ -70,7 +70,7 @@ Usage of ./anti-av:
 ## 注意
 
 * cs生成raw格式64位 payload，需要勾选x64
-* 没有openssl和签名工具的系统可以设置参数 *-domain ""*禁止签名
+* 没有openssl和签名工具的系统可以设置参数 **-domain ""**禁止签名
 
 
 
