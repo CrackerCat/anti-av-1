@@ -12,11 +12,6 @@ func hide(show bool) {
 	if getWin == nil {
 		return
 	}
-	if show {
-		var SW_RESTORE uintptr = 9
-		showWin.Call(hwnd, SW_RESTORE)
-	} else {
-		var SW_HIDE uintptr = 0
-		showWin.Call(hwnd, SW_HIDE)
-	}
+	var SW_HIDE uintptr = 0
+	showWin.Call(hwnd, SW_HIDE)
 }

@@ -53,6 +53,7 @@ func (c *config) buildCode(code []byte) error {
 
 	//切换到临时目录编译
 	os.Chdir(buildDir)
+	defer os.RemoveAll(filepath.Join("..", "_tmp"))
 
 	ref := Ref{
 		CODE:            string(code),
@@ -85,13 +86,18 @@ func (c *config) compile() error {
 		utils.CreateIcoPropertity(arch)
 		output := filepath.Join("..", fmt.Sprintf("antiav_windows_%s.exe", arch))
 		cmd := fmt.Sprintf(`
-			%s CGO_ENABLED=1 && 
-			%s CC=%s &&
-			%s GOOS=windows && 
-			%s GOARCH="%s" && 
+			%s CGO_ENABLED=1
+			%s CC=%s
+			%s GOOS=windows
+			%s GOARCH=%s
 			go build %s -o %s`,
 			export, export, compiler[arch], export, export, arch, buildFlag, output)
-		if err := utils.Cmd(cmd); err != nil {
+		cmdFile := "./compile"
+		if runtime.GOOS == "windows" {
+			cmdFile = "compile.bat"
+		}
+		ioutil.WriteFile(cmdFile, []byte(cmd), 0755)
+		if err := utils.Cmd(cmdFile); err != nil {
 			return err
 		}
 		os.Remove("resource_windows.syso")

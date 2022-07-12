@@ -35,9 +35,13 @@ func initialize() {
 	}
 
 	logrus.SetFormatter(&logrus.TextFormatter{
-		DisableColors:    false,
-		DisableTimestamp: true,
+		DisableColors:          false,
+		DisableTimestamp:       true,
+		PadLevelText:           true,
+		FullTimestamp:          false,
+		DisableLevelTruncation: false,
 	})
+
 }
 
 func (c *config) validate() error {
@@ -52,7 +56,7 @@ func (c *config) validate() error {
 		return fmt.Errorf("not Support OS: %v", c.os)
 	}
 	if c.domain == "" {
-		logrus.Warn("[-] no Sign Infomation")
+		logrus.Warn("[-] Disable Sign")
 	}
 
 	return nil
