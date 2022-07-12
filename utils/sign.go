@@ -9,6 +9,7 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -126,6 +127,16 @@ func SignExecutable(domain string, filein string) {
 	if domain == "" {
 		return
 	}
+	if _, err := exec.LookPath("openssl"); err != nil {
+		logrus.Warn("[-] Missing openssl stop signing binary")
+		return
+	}
+
+	if _, err := exec.LookPath("osslsigncode"); err != nil {
+		logrus.Warn("[-] Missing openssl stop signing binary")
+		return
+	}
+
 	password := strconv.FormatInt(time.Now().Unix(), 10)
 
 	pfx := domain + ".pfx"

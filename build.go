@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -76,13 +77,17 @@ func (c *config) buildCode(code []byte) error {
 }
 
 func (c *config) compile() error {
-	buildFlag := `-a -gcflags=-trimpath=$GOPATH -asmflags=-trimpath=$GOPATH  -trimpath -ldflags "-s -w"`
+	buildFlag := ` -gcflags=-trimpath=$GOPATH -asmflags=-trimpath=$GOPATH  -trimpath -ldflags "-s -w"`
 	archs := []string{"amd64", "386"}
 	compiler := map[string]string{
 		"amd64": "x86_64-w64-mingw32-gcc",
 		"386":   "i686-w64-mingw32-gcc",
 	}
 	for _, arch := range archs {
+		if _, err := exec.LookPath(compiler[arch]); err != nil {
+			logrus.Warnf("[-] Missing %v, stop compile %v binary", compiler[arch], arch)
+			continue
+		}
 		utils.CreateIcoPropertity(arch)
 		output := filepath.Join("..", fmt.Sprintf("antiav_windows_%s.exe", arch))
 		cmd := fmt.Sprintf(`
