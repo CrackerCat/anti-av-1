@@ -7,6 +7,7 @@ type config struct {
 	os             string //windows,linux
 	domain         string //签名域名
 	hostObfuscator string //混淆远程加载shellcode的地址，干扰蓝队告警日志研判
+	inject         bool   //注入模式
 
 	//加密 shellcode
 	crypt bool

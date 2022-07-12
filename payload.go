@@ -1,6 +1,7 @@
 package main
 
 import (
+	"html/template"
 	"io/ioutil"
 	"math/rand"
 	"os"
@@ -9,6 +10,12 @@ import (
 	"github.com/b1gcat/anti-av/utils"
 	"github.com/sirupsen/logrus"
 )
+
+type Ref struct {
+	CODE            string
+	HOST_OBFUSCATOR string
+	HACK            string
+}
 
 func (c *config) buildPayload() {
 	if !c.crypt {
@@ -43,4 +50,31 @@ func (c *config) payloadEncrypt(key, sc []byte, out bool) ([]byte, error) {
 		logrus.Info("[*] encrypted Payload:", filepath.Join("dist", "payload.e"))
 	}
 	return esc, nil
+}
+
+func (c *config) payloadPatch(ref *Ref, file string) error {
+	sc, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
+	}
+	tmpl, err := template.New("attacker").Funcs(template.FuncMap{
+		"lt": func(s string) string {
+			return s
+		},
+	}).Parse(string(sc))
+	if err != nil {
+		return err
+	}
+
+	wr, err := os.OpenFile(file, os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0755)
+	if err != nil {
+		return err
+	}
+	defer wr.Close()
+
+	if err := tmpl.Execute(wr, ref); err != nil {
+		return err
+	}
+
+	return nil
 }

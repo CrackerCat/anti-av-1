@@ -2,6 +2,6 @@
 
 package main
 
-func window(show bool) {
+func hide(show bool) {
 	return
 }

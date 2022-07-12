@@ -8,23 +8,25 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"fmt"
-	"log"
 	"os"
-	"os/exec"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 func GenerateCert(domain string) {
 	var err error
 	rootKey, err := rsa.GenerateKey(rand.Reader, 4096)
 	if err != nil {
-		panic(err)
+		logrus.Info("[-] ", err.Error())
+		os.Exit(0)
 	}
 	certs, err := GetCertificatesPEM(domain + ":443")
 	if err != nil {
-		log.Fatal("Error: The domain: " + domain + " does not exist or is not accessible from the host you are compiling on")
+		logrus.Info("[-] ", err.Error())
+		os.Exit(0)
 	}
 	block, _ := pem.Decode([]byte(certs))
 	cert, _ := x509.ParseCertificate(block.Bytes)
@@ -53,38 +55,40 @@ func GenerateCert(domain string) {
 	}
 	derBytes, err := x509.CreateCertificate(rand.Reader, &SubjectTemplate, &IssuerTemplate, &rootKey.PublicKey, rootKey)
 	if err != nil {
-		panic(err)
+		logrus.Info("[-] ", err.Error())
+		os.Exit(0)
 	}
 	certToFile(domain+".pem", derBytes)
-
 }
 
 func keyToFile(filename string, key *rsa.PrivateKey) {
 	file, err := os.Create(filename)
 	if err != nil {
-		panic(err)
+		logrus.Info("[-] Unable to marshal Create private key: ", err.Error())
+		os.Exit(0)
 	}
 	defer file.Close()
 	b, err := x509.MarshalPKCS8PrivateKey(key)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to marshal RSA private key: %v", err)
-		os.Exit(2)
+		logrus.Info("[-] Unable to marshal RSA private key: ", err.Error())
+		os.Exit(0)
 	}
 	if err := pem.Encode(file, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: b}); err != nil {
-		panic(err)
+		logrus.Info("[-] Unable to pem RSA private key: ", err.Error())
+		os.Exit(0)
 	}
 }
 
 func certToFile(filename string, derBytes []byte) {
 	certOut, err := os.Create(filename)
 	if err != nil {
-		log.Fatalf("[-] Failed to Open cert.pem for Writing: %s", err)
+		logrus.Info("[-] Failed to Open cert.pem for Writing: ", err.Error())
 	}
 	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
-		log.Fatalf("[-] Failed to Write Data to cert.pem: %s", err)
+		logrus.Info("[-] Failed to Write Data to cert.pem: ", err.Error())
 	}
 	if err := certOut.Close(); err != nil {
-		log.Fatalf("[-] Error Closing cert.pem: %s", err)
+		logrus.Info("[-] Error Closing cert.pem: ", err.Error())
 	}
 }
 
@@ -110,10 +114,11 @@ func GetCertificatesPEM(address string) (string, error) {
 }
 
 func GeneratePFK(password string, domain string) {
-	cmd := exec.Command("openssl", "pkcs12", "-export", "-out", domain+".pfx", "-inkey", domain+".key", "-in", domain+".pem", "-passin", "pass:"+password+"", "-passout", "pass:"+password+"")
-	err := cmd.Run()
+	cmd := []string{"openssl", "pkcs12", "-export", "-out", domain + ".pfx", "-inkey", domain + ".key", "-in", domain + ".pem", "-passin", "pass:" + password + "", "-passout", "pass:" + password + ""}
+	err := Cmd(strings.Join(cmd, " "))
 	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+		logrus.Info("[-] cmd.Run() failed with", err.Error())
+		os.Exit(0)
 	}
 }
 
@@ -124,16 +129,17 @@ func SignExecutable(domain string, filein string) {
 	password := strconv.FormatInt(time.Now().Unix(), 10)
 
 	pfx := domain + ".pfx"
-	fmt.Println("[*] signing " + filein + " with a fake cert")
+	logrus.Info("[*] signing " + filein + " with a fake cert")
 	os.Rename(filein, filein+".old")
 	inputFile := filein + ".old"
 	defer os.Remove(inputFile)
 	GenerateCert(domain)
 	GeneratePFK(password, domain)
 
-	cmd := exec.Command("osslsigncode", "sign", "-pkcs12", pfx, "-in", ""+inputFile+"", "-out", ""+filein+"", "-pass", ""+password+"")
-	err := cmd.Run()
+	cmd := []string{"osslsigncode", "sign", "-pkcs12", pfx, "-in", "" + inputFile + "", "-out", "" + filein + "", "-pass", "" + password + ""}
+	err := Cmd(strings.Join(cmd, " "))
 	if err != nil {
-		log.Fatalf("cmd.Run() failed with %s\n", err)
+		logrus.Info("[-] cmd.Run() failed with", err.Error())
+		os.Exit(0)
 	}
 }

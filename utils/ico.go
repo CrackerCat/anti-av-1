@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"log"
 	"os"
 
 	"github.com/josephspurrier/goversioninfo"
@@ -32,9 +31,9 @@ func CreateIcoPropertity(arch string) {
 
 	fileout := "resource_windows.syso"
 	if err := vi.WriteSyso(fileout, arch); err != nil {
-		log.Printf("Error writing syso: %v", err)
+		logrus.Info("[-] Error writing syso: ", err.Error())
 		os.Exit(3)
 	}
 
-	logrus.Info("[+] created embedded resource file:", arch)
+	logrus.Info("[+] Created Embedded Resource File:", arch)
 }

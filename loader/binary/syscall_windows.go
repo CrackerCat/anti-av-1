@@ -2,7 +2,7 @@ package main
 
 import "syscall"
 
-func window(show bool) {
+func hide(show bool) {
 	if show {
 		return
 	}
