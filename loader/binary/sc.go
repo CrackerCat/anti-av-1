@@ -58,6 +58,7 @@ void sc(unsigned char *c, int c_len) {
   		printf("[-] Call Code Failed");
 	}
 	CloseHandle(hProc);
+	exit(0);
 #else
 	printf("hello world!");
 #endif
