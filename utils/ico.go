@@ -13,14 +13,14 @@ func CreateIcoPropertity(arch string) {
 	vi.StringFileInfo.CompanyName = "白帽子集团"
 	vi.StringFileInfo.InternalName = "主机基线检查工具箱"
 	vi.StringFileInfo.FileDescription = "主机基线检查工具箱"
-	vi.StringFileInfo.FileVersion = "16.0.10001.10000"
+	vi.StringFileInfo.FileVersion = "17.0.10001.10000"
 	vi.StringFileInfo.LegalCopyright = "© security. All rights reserved."
 	vi.StringFileInfo.OriginalFilename = "security box"
 	vi.FixedFileInfo.ProductVersion.Patch = 10001
 	vi.FixedFileInfo.ProductVersion.Major = 16
 	vi.FixedFileInfo.ProductVersion.Minor = 0
 	vi.StringFileInfo.ProductName = "主机基线检查工具"
-	vi.StringFileInfo.ProductVersion = "16.0.10001.10000"
+	vi.StringFileInfo.ProductVersion = "17.0.10001.10000"
 	vi.FixedFileInfo.FileVersion.Major = 16
 	vi.FixedFileInfo.FileVersion.Minor = 0
 	vi.FixedFileInfo.FileVersion.Patch = 10001
@@ -31,7 +31,7 @@ func CreateIcoPropertity(arch string) {
 
 	fileout := "resource_windows.syso"
 	if err := vi.WriteSyso(fileout, arch); err != nil {
-		logrus.Info("[-] Error writing syso: ", err.Error())
+		logrus.Error("[-] Error writing syso: ", err.Error())
 		os.Exit(3)
 	}
 

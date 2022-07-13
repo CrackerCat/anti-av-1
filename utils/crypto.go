@@ -4,32 +4,49 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 )
 
+func Kek(src []byte) []byte {
+	h := sha256.New()
+	h.Write(src)
+	return h.Sum(nil)[:4]
+}
+
 func Crypt(key, src []byte) ([]byte, error) {
 	k := hex.EncodeToString(key[:8])
+
+	iv := make([]byte, 8)
+	rand.Read(iv)
+	i := hex.EncodeToString(iv[:8])
+
 	x, err := aes.NewCipher([]byte(k))
 	if err != nil {
 		return nil, err
 	}
 	src = PKCS7Padding(src, x.BlockSize())
-	kl := len(key)
-	dst := make([]byte, len(src)+kl)
+	dst := make([]byte, len(src)+len(key)+len(iv))
+
 	copy(dst, key)
-	mode := cipher.NewCBCEncrypter(x, []byte(k))
-	mode.CryptBlocks(dst[kl:], src)
+	copy(dst[len(key):], iv)
+
+	mode := cipher.NewCBCEncrypter(x, []byte(i))
+	mode.CryptBlocks(dst[len(key)+len(iv):], src)
+	//key+iv+e_data
 	return dst, nil
 }
 
 func DeCrypt(src []byte) ([]byte, error) {
 	key := hex.EncodeToString(src[:8])
-	src = src[8:]
+	iv := hex.EncodeToString(src[8:16])
+	src = src[16:]
 	x, err := aes.NewCipher([]byte(key))
 	if err != nil {
 		return nil, err
 	}
-	mode := cipher.NewCBCDecrypter(x, []byte(key))
+	mode := cipher.NewCBCDecrypter(x, []byte(iv))
 	dst := make([]byte, len(src))
 	mode.CryptBlocks(dst, src)
 	dst = PKCS7UnPadding(dst)

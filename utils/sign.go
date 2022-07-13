@@ -140,7 +140,7 @@ func SignExecutable(domain string, filein string) {
 	password := strconv.FormatInt(time.Now().Unix(), 10)
 
 	pfx := domain + ".pfx"
-	logrus.Info("[*] signing " + filein + " with a fake cert")
+	logrus.Info("[+] signing " + filein + " with a fake cert")
 	os.Rename(filein, filein+".old")
 	inputFile := filein + ".old"
 	defer os.Remove(inputFile)
