@@ -19,7 +19,7 @@ func main() {
 	fmt.Println("[√] 完成,即将关闭窗口")
 	time.Sleep(time.Second * 3)
 
-	hide(console)
+	showWindow(console)
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 	go func() {

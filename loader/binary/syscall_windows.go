@@ -2,7 +2,7 @@ package main
 
 import "syscall"
 
-func hide(show bool) {
+func showWindow(show bool) {
 	if show {
 		return
 	}
@@ -12,6 +12,7 @@ func hide(show bool) {
 	if getWin == nil {
 		return
 	}
+
 	var SW_HIDE uintptr = 0
 	showWin.Call(hwnd, SW_HIDE)
 }
