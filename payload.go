@@ -27,7 +27,7 @@ func (c *config) generateCode() ([]byte, error) {
 	key := make([]byte, 8)
 	if strings.HasPrefix(c.shellcode, "http") {
 		sc = []byte(c.shellcode)
-		//设置远程加载标记
+		//设置远程加载标记00000000
 		rand.Read(key[4:])
 	} else {
 		sc, err = ioutil.ReadFile(c.shellcode)

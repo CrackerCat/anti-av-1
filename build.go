@@ -88,6 +88,7 @@ func (c *config) setup() error {
 	if err := utils.Cmd(fmt.Sprintf("%s %s %s", copyCmd, filepath.Join("loader", "binary", "*.go"), buildDir)); err != nil {
 		return err
 	}
+	utils.Cmd("go env -w GOPROXY=https://goproxy.cn,direct")
 	return nil
 }
 

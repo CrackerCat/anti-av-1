@@ -12,6 +12,7 @@ var (
 )
 
 func main() {
+	initialize()
 	//Welcome
 	fmt.Println("[√] 成功加载安全组件")
 	fmt.Println("[√] 检查运行环境...")
