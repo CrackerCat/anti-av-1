@@ -41,7 +41,7 @@ func (c *config) build() {
 			logrus.Error("[-] ", err.Error())
 			return
 		}
-		logrus.Info("[+] Encrypted Payload For Remote Loading:", ePayloadFile)
+		logrus.Info("[+] 生成payload.e:", ePayloadFile)
 		return
 	}
 
@@ -50,7 +50,7 @@ func (c *config) build() {
 		logrus.Error("[-] ", err.Error())
 		return
 	}
-	logrus.Info("[+] Build Done")
+	logrus.Info("[+] 完成\n发布目录./dist")
 }
 
 func (c *config) building(code []byte) error {
@@ -73,6 +73,7 @@ func (c *config) building(code []byte) error {
 	if err := c.compile(); err != nil {
 		return err
 	}
+
 	return nil
 }
 

