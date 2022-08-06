@@ -18,7 +18,7 @@
 
 * 任意执行文件免杀加载，payload为pe格式
 
-  ​	注意：执行免杀时，如果不带参数可以绕过av监测，带参数目前测试defender过不了，估计有参数黑名单）
+  ​	注意：执行免杀时，如果不带参数可以绕过av监测，带参数的那啥目前测试defender过不了，估计有参数黑名单）
 
 
 ## 安装
@@ -27,7 +27,9 @@
 
 ```bash
 1、建议使用Mac或linux环境
+
 2、安装交叉编译 mingw64
+
 3、安装签名 openssl、osslsigncode
 ```
 
@@ -77,7 +79,9 @@ Usage of ./anti-av:
 
 ## 注意
 
-* cs生成raw格式64位 payload，需要勾选x64
+* CS生成raw格式64位 payload，需要勾选x64
+
+* PE加载时如果带参数例如: `anttav_windows_amd64 "privilege::debug" "sekurlsa::logonpasswords" "exit"`,此时会被拦截。
 
   
 

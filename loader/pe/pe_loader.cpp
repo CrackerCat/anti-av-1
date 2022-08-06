@@ -123,16 +123,16 @@ bool fixIAT(PVOID modulePtr)
 			IMAGE_THUNK_DATA* orginThunk = (IMAGE_THUNK_DATA*)(size_t(modulePtr) + offsetThunk + thunk_addr);
 
 			if (orginThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG32 || orginThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG64) // check if using ordinal (both x86 && x64)
-            {
-                size_t addr = (size_t)GetProcAddress(LoadLibraryA(lib_name), (char *)(orginThunk->u1.Ordinal & 0xFFFF));
-                printf("        [V] API %x at %x\n", orginThunk->u1.Ordinal, addr);
-                fieldThunk->u1.Function = addr;
-            }
-			
+			{
+				size_t addr = (size_t)GetProcAddress(LoadLibraryA(lib_name), (char *)(orginThunk->u1.Ordinal & 0xFFFF));
+				printf("        [V] API %x at %x\n", orginThunk->u1.Ordinal, addr);
+				fieldThunk->u1.Function = addr;
+			}
+
 			if (!fieldThunk->u1.Function) break;
 
 			if (fieldThunk->u1.Function == orginThunk->u1.Function) {
-				
+
 				PIMAGE_IMPORT_BY_NAME by_name = (PIMAGE_IMPORT_BY_NAME)(size_t(modulePtr) + orginThunk->u1.AddressOfData);
 
 				LPSTR func_name = (LPSTR)by_name->Name;
@@ -167,7 +167,7 @@ void peLoader(unsigned char *data, const wchar_t* cmdline)
 
 	HMODULE dll = LoadLibraryA("ntdll.dll");
 	((int(WINAPI*)(HANDLE, PVOID))GetProcAddress(dll, "NtUnmapViewOfSection"))((HANDLE)-1, (LPVOID)ntHeader->OptionalHeader.ImageBase);
-	
+
 	pImageBase = (BYTE *)VirtualAlloc(preferAddr, ntHeader->OptionalHeader.SizeOfImage, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 	if (!pImageBase && !relocDir)
 	{
@@ -184,7 +184,7 @@ void peLoader(unsigned char *data, const wchar_t* cmdline)
 			return;
 		}
 	}
-	
+
 	puts("[+] Mapping Section ...");
 	ntHeader->OptionalHeader.ImageBase = (size_t)pImageBase;
 	memcpy(pImageBase, (BYTE *)data, ntHeader->OptionalHeader.SizeOfHeaders);
@@ -194,22 +194,22 @@ void peLoader(unsigned char *data, const wchar_t* cmdline)
 	{
 		printf("    [+] Mapping Section %s\n", SectionHeaderArr[i].Name);
 		memcpy
-		(
-			LPVOID(size_t(pImageBase) + SectionHeaderArr[i].VirtualAddress),
-			LPVOID(size_t((BYTE *)data) + SectionHeaderArr[i].PointerToRawData),
-			SectionHeaderArr[i].SizeOfRawData
-		);
+			(
+			 LPVOID(size_t(pImageBase) + SectionHeaderArr[i].VirtualAddress),
+			 LPVOID(size_t((BYTE *)data) + SectionHeaderArr[i].PointerToRawData),
+			 SectionHeaderArr[i].SizeOfRawData
+			);
 	}
-    puts("[+] Mapping Section Done");
-	
+	puts("[+] Mapping Section Done");
+
 	fixIAT(pImageBase);
 
 	if (pImageBase != preferAddr) 
 		if (applyReloc((size_t)pImageBase, (size_t)preferAddr, pImageBase, ntHeader->OptionalHeader.SizeOfImage))
-		puts("[+] Relocation Fixed.");
+			puts("[+] Relocation Fixed.");
 	size_t retAddr = (size_t)(pImageBase)+ntHeader->OptionalHeader.AddressOfEntryPoint;
 	printf("Run PE\n");
 
 	((void(*)())retAddr)();
-    return;
+	return;
 }
