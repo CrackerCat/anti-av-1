@@ -33,6 +33,10 @@ func main() {
 }
 
 func initialize() {
-	flag.BoolVar(&console, "console", false, "信息输出")
-	flag.Parse()
+	if "{{.LOADER}}" == "pe" {
+		console = true
+	} else {
+		flag.BoolVar(&console, "console", false, "信息输出")
+		flag.Parse()
+	}
 }

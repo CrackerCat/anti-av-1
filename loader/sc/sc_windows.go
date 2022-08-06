@@ -1,8 +1,6 @@
 package sc
 
 /*
-#cgo windows CFLAGS: -DWIN=1
-
 #include <stdio.h>
 #include <Windows.h>
 #include <tchar.h>
@@ -52,8 +50,11 @@ void sc(unsigned char *c, int c_len) {
 	}
 	CloseHandle(hProc);
 }
+#else
+void sc(unsigned char *c, int c_len) {
+	printf("[-] Hello World!\n");
+}
 #endif 
-
 */
 import "C"
 import (

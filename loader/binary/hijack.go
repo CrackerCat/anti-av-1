@@ -9,7 +9,7 @@ import (
 )
 
 func hiJack() {
-	fmt.Println("[-] ", sc.Hi(payload))
+	fmt.Println("[-] ", {{.LOADER}}.Hi(payload))
 }
 
 func payload(code []byte) ([]byte, error) {

